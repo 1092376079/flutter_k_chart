@@ -20,9 +20,13 @@ class KChartWidget extends StatefulWidget {
   final VolState volState;
   final SecondaryState secondaryState;
   final bool isLine;
+  final ChartColors chartColors;
+  final ChartStyle chartStyle;
 
   KChartWidget(
-    this.datas, {
+    this.datas,
+    this.chartStyle,
+    this.chartColors,{
     this.mainState = MainState.MA,
     this.volState = VolState.VOL,
     this.secondaryState = SecondaryState.MACD,
@@ -182,6 +186,8 @@ class _KChartWidgetState extends State<KChartWidget>
           CustomPaint(
             size: const Size(double.infinity, double.infinity),
             painter: ChartPainter(
+                widget.chartStyle,
+                widget.chartColors,
                 datas: widget.datas,
                 scaleX: mScaleX,
                 scrollX: mScrollX,
@@ -251,9 +257,9 @@ class _KChartWidgetState extends State<KChartWidget>
               margin: const EdgeInsets.only(left: 10, right: 10, top: 25),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
               decoration: BoxDecoration(
-                  color: ChartColors.markerBgColor,
+                  color: widget.chartColors.markerBgColor,
                   border: Border.all(
-                      color: ChartColors.markerBorderColor, width: 0.5)),
+                      color: widget.chartColors.markerBorderColor, width: 0.5)),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: List.generate(infoNames.length,

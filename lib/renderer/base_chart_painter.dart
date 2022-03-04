@@ -19,11 +19,13 @@ abstract class BaseChartPainter extends CustomPainter {
   double scaleX = 1.0, scrollX = 0.0, selectX;
   bool isLongPress = false;
   bool isLine;
-
+  final ChartStyle chartStyle;
   //3块区域大小与位置
   late Rect mMainRect;
   Rect? mVolRect, mSecondaryRect;
   late double mDisplayHeight, mWidth;
+  double mTopPadding = 30.0, mBottomPadding = 20.0, mChildPadding = 12.0;
+  int mGridRows = 4, mGridColumns = 4;
 
   int mStartIndex = 0, mStopIndex = 0;
   double mMainMaxValue = -double.maxFinite, mMainMinValue = double.maxFinite;
@@ -36,11 +38,12 @@ abstract class BaseChartPainter extends CustomPainter {
       mMainLowMinValue = double.maxFinite;
   int mItemCount = 0;
   double mDataLen = 0.0; //数据占屏幕总长度
-  double mPointWidth = ChartStyle.pointWidth;
+  late double mPointWidth;
   List<String> mFormats = [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn]; //格式化时间
   double mMarginRight = 0.0; //k线右边空出来的距离
 
   BaseChartPainter(
+      this.chartStyle,
       {required this.datas,
       required this.scaleX,
       required this.scrollX,
@@ -50,6 +53,12 @@ abstract class BaseChartPainter extends CustomPainter {
       this.volState = VolState.VOL,
       this.secondaryState = SecondaryState.MACD,
       this.isLine = false}) {
+    mPointWidth = this.chartStyle.pointWidth;
+    mTopPadding = this.chartStyle.topPadding;
+    mBottomPadding = this.chartStyle.bottomPadding;
+    mChildPadding = this.chartStyle.childPadding;
+    mGridRows = this.chartStyle.gridRows;
+    mGridColumns = this.chartStyle.gridColumns;
     mItemCount = datas.length;
     mDataLen = mItemCount * mPointWidth;
     initFormats();
@@ -75,10 +84,9 @@ abstract class BaseChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.clipRect(Rect.fromLTRB(0, 0, size.width, size.height));
-    mDisplayHeight =
-        size.height - ChartStyle.topPadding - ChartStyle.bottomDateHigh;
+    mDisplayHeight = size.height - mTopPadding - mBottomPadding;
     mWidth = size.width;
-    mMarginRight = (mWidth / ChartStyle.gridColumns - mPointWidth) / scaleX;
+    // mMarginRight = (mWidth / gridColumns - mPointWidth) / scaleX;
     initRect(size);
     calculateValue();
     initChartRenderer();
@@ -136,15 +144,15 @@ abstract class BaseChartPainter extends CustomPainter {
       mainHeight = mDisplayHeight * 0.8;
     }
     mMainRect = Rect.fromLTRB(
-        0, ChartStyle.topPadding, mWidth, ChartStyle.topPadding + mainHeight);
+        0, mTopPadding, mWidth, mTopPadding + mainHeight);
     if (volState != VolState.NONE) {
-      mVolRect = Rect.fromLTRB(0, mMainRect.bottom + ChartStyle.childPadding,
+      mVolRect = Rect.fromLTRB(0, mMainRect.bottom + mChildPadding,
           mWidth, mMainRect.bottom + volHeight);
     }
     if (secondaryState != SecondaryState.NONE) {
       mSecondaryRect = Rect.fromLTRB(
           0,
-          (mVolRect?.bottom ?? mMainRect.bottom) + ChartStyle.childPadding,
+          (mVolRect?.bottom ?? mMainRect.bottom) + mChildPadding,
           mWidth,
           (mVolRect?.bottom ?? mMainRect.bottom) + secondaryHeight);
     }

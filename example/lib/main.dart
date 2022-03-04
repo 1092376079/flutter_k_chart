@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_k_chart/flutter_k_chart.dart';
 import 'package:flutter_k_chart/generated/l10n.dart' as k_chart;
 import 'package:flutter_k_chart/k_chart_widget.dart';
+import 'package:flutter_k_chart/chart_style.dart';
 import 'package:http/http.dart' as http;
 
 void main() => runApp(MyApp());
@@ -42,11 +43,15 @@ class _MyHomePageState extends State<MyHomePage> {
   MainState _mainState = MainState.MA;
   SecondaryState _secondaryState = SecondaryState.MACD;
   bool isLine = true;
-  List<DepthEntity> _bids = [], _asks = [];
+  List<DepthEntity>? _bids = [], _asks = [];
+  ChartStyle chartStyle = ChartStyle();
+  ChartColors chartColors = ChartColors();
 
   @override
   void initState() {
     super.initState();
+    chartColors.bgColor = [const Color(0xffffffff), const Color(0xffffffff)];
+    chartColors.gridColor = const Color(0xFFF8F8F8);
     getData('1day');
     rootBundle.loadString('assets/depth.json').then((result) {
       final parseJson = json.decode(result);
@@ -67,22 +72,22 @@ class _MyHomePageState extends State<MyHomePage> {
     if (bids == null || asks == null || bids.isEmpty || asks.isEmpty) return;
     _bids = [];
     _asks = [];
-    double amount = 0.0;
+    double vol = 0.0;
     bids.sort((left, right) => left.price.compareTo(right.price));
     //倒序循环 //累加买入委托量
     bids.reversed.forEach((item) {
-      amount += item.amount;
-      item.amount = amount;
-      _bids.insert(0, item);
+      vol += item.vol;
+      item.vol = vol;
+      _bids!.insert(0, item);
     });
 
-    amount = 0.0;
+    vol = 0.0;
     asks.sort((left, right) => left.price.compareTo(right.price));
     //循环 //累加买入委托量
     asks.forEach((item) {
-      amount += item.amount;
-      item.amount = amount;
-      _asks.add(item);
+      vol += item.vol;
+      item.vol = vol;
+      _asks!.add(item);
     });
     setState(() {});
   }
@@ -101,6 +106,8 @@ class _MyHomePageState extends State<MyHomePage> {
               width: double.infinity,
               child: KChartWidget(
                 datas,
+                chartStyle,
+                chartColors,
                 isLine: isLine,
                 mainState: _mainState,
                 secondaryState: _secondaryState,
@@ -116,11 +123,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: CircularProgressIndicator()),
           ]),
           buildButtons(),
-          Container(
-            height: 230,
-            width: double.infinity,
-            child: DepthChart(_bids, _asks),
-          )
+          if (_bids != null && _asks != null)
+            Container(
+              height: 230,
+              width: double.infinity,
+              child: DepthChart(_bids!, _asks!, chartColors),
+            )
         ],
       ),
     );

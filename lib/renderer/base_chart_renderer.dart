@@ -5,9 +5,10 @@ export '../chart_style.dart';
 
 abstract class BaseChartRenderer<T> {
   double maxValue, minValue;
-  late double scaleY, scaleX;
+  late double scaleY;
   double topPadding;
   Rect chartRect;
+  int fixedLength;
   final Paint chartPaint = Paint()
     ..isAntiAlias = true
     ..filterQuality = FilterQuality.high
@@ -17,17 +18,20 @@ abstract class BaseChartRenderer<T> {
     ..isAntiAlias = true
     ..filterQuality = FilterQuality.high
     ..strokeWidth = 0.5
-    ..color = ChartColors.gridColor;
+    ..color = Color(0xff4c5c74);
 
   BaseChartRenderer(
       {required this.chartRect,
       required this.maxValue,
       required this.minValue,
       required this.topPadding,
-      required this.scaleX}) {
+      required this.fixedLength,
+      // required this.scaleX,
+      required Color gridColor}) {
     if (maxValue == minValue) {
       maxValue += 0.5;
       minValue -= 0.5;
+      gridPaint.color = gridColor;
     }
     scaleY = chartRect.height / (maxValue - minValue);
   }
